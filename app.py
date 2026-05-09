@@ -63,16 +63,34 @@ col_izq, col_der = st.columns([1.2, 0.8], gap="large")
 
 with col_izq:
     st.subheader("Visualización del Análisis")
-    # Contenedor simulado para el video vertical
-    st.markdown("""
-        <div class="video-container">
-            <p style='text-align: center; color: #CACFE3;'>
-                Área del Video Analizado<br>
-                (Aquí se mostrará el output de MediaPipe)
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    st.caption("Tracking de muñeca, brazo y tronco activo.")
+    
+    import os
+    video_path = "Final.mp4"
+    
+    if os.path.exists(video_path):
+        try:
+            # --- MODO BINARIO ---
+            # Leemos el archivo físico y lo convertimos en bytes
+            with open(video_path, 'rb') as f:
+                video_bytes = f.read()
+            
+            # Pasamos los bytes directamente al componente
+            st.video(video_bytes)
+            
+        except Exception as e:
+            st.error(f"Error al leer el archivo: {e}")
+    else:
+        # Contenedor de error si no encuentra el archivo
+        st.markdown(f"""
+            <div class="video-container">
+                <p style='text-align: center; color: #CACFE3;'>
+                    Archivo <b>{video_path}</b> no encontrado.<br>
+                    Asegúrate de que esté en la misma carpeta que app.py
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    st.caption("Video con análisis de ángulos (MediaPipe) finalizado.")
 
 with col_der:
     st.subheader("Panel de Control")
