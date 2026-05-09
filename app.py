@@ -1,6 +1,5 @@
 import streamlit as st
 import asyncio
-from pruebasRona import analizar_serie
 
 # Configuración inicial
 st.set_page_config(page_title="AI Coach Ping Pong", layout="wide")
