@@ -7,10 +7,18 @@ video_path = "Video.mp4"
 cap = cv2.VideoCapture(video_path)
 detector = PoseDetector()
 
+# Obtener propiedades del video original
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = cap.get(cv2.CAP_PROP_FPS)
+
+# Crear video de salida
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter("Final.mp4", fourcc, fps, (width, height))
+
 while True:
     success, img = cap.read()
 
-    # Termina cuando el video acaba
     if not success:
         break
 
@@ -45,11 +53,14 @@ while True:
         cv2.putText(img, f"R Wrist: {int(right_wrist)}", (20, 160),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
+    # Guardar frame en el video final
+    out.write(img)
+
     cv2.imshow("Pose Detection", img)
 
-    # Presiona Q para salir
-    if cv2.waitKey(25) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
+out.release()
 cv2.destroyAllWindows()
