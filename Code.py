@@ -10,11 +10,9 @@ detector = PoseDetector()
 serie_angulos = []
 frame_num = 0
 
-# Calcula el FRAME_SKIP automáticamente según los FPS del video
 fps = cap.get(cv2.CAP_PROP_FPS)
-SAMPLE_EVERY_N_SECONDS = 0.2          # 1 muestra cada 0.2 segundos
+SAMPLE_EVERY_N_SECONDS = 0.2
 FRAME_SKIP = max(1, int(fps * SAMPLE_EVERY_N_SECONDS))
-print(f"FPS del video: {fps:.1f} | Analizando 1 frame cada {FRAME_SKIP} frames")
 
 # =========================
 # PROCESS VIDEO
@@ -25,7 +23,6 @@ while True:
         break
     frame_num += 1
 
-    # Saltar frames según FRAME_SKIP
     if frame_num % FRAME_SKIP != 0:
         continue
 
@@ -33,7 +30,6 @@ while True:
     lmList, _ = detector.findPosition(img, draw=False)
 
     if lmList:
-        # Ángulos principales
         left_arm, img = detector.findAngle(
             lmList[11][:2], lmList[13][:2], lmList[15][:2], img)
         right_arm, img = detector.findAngle(
@@ -43,7 +39,6 @@ while True:
         right_wrist, img = detector.findAngle(
             lmList[14][:2], lmList[16][:2], lmList[20][:2], img)
 
-        # Guardar datos
         serie_angulos.append({
             "frame": frame_num,
             "left_arm": int(left_arm),
@@ -62,37 +57,27 @@ cv2.destroyAllWindows()
 # =========================
 # BUILD FINAL PROMPT
 # =========================
-prompt = """
-Eres un entrenador experto en ping pong de alto rendimiento.
-Recibirás una serie de datos frame por frame de un saque, con ángulos del cuerpo del jugador.
-Tu tarea es hacer un análisis técnico profundo, profesional y claro.
-Debes:
-- Analizar la consistencia del saque
-- Detectar patrones en brazos y muñecas
-- Identificar errores técnicos
-- Dar recomendaciones de mejora
-- Usar un tono profesional con acento argentino suave
-A continuación tienes todos los frames del saque:
-"""
+prompt = "Eres un entrenador experto en ping pong de alto rendimiento.\n"
+prompt += "Recibirás una serie de datos frame por frame de un saque, con ángulos del cuerpo del jugador.\n"
+prompt += "Tu tarea es hacer un análisis técnico profundo, profesional y claro.\n"
+prompt += "Debes:\n"
+prompt += "- Analizar la consistencia del saque\n"
+prompt += "- Detectar patrones en brazos y muñecas\n"
+prompt += "- Identificar errores técnicos\n"
+prompt += "- Dar recomendaciones de mejora\n"
+prompt += "- Usar un tono profesional con acento argentino suave\n"
+prompt += "A continuación tienes todos los frames del saque:\n"
 
 for d in serie_angulos:
-    prompt += f"""
-Frame {d['frame']}:
-- Brazo izquierdo: {d['left_arm']}°
-- Muñeca izquierda: {d['left_wrist']}°
-- Brazo derecho: {d['right_arm']}°
-- Muñeca derecha: {d['right_wrist']}°
-"""
+    prompt += f"\nFrame {d['frame']}:\n"
+    prompt += f"- Brazo izquierdo: {d['left_arm']}°\n"
+    prompt += f"- Muñeca izquierda: {d['left_wrist']}°\n"
+    prompt += f"- Brazo derecho: {d['right_arm']}°\n"
+    prompt += f"- Muñeca derecha: {d['right_wrist']}°\n"
 
-prompt += """
-Ahora realiza el análisis completo del saque.
-"""
+prompt += "\nAhora realiza el análisis completo del saque."
 
 # =========================
-# OUTPUT
+# OUTPUT — solo el prompt listo para la API
 # =========================
-print("\n===== PROMPT FINAL =====\n")
 print(prompt)
-print("\n===== RESUMEN =====")
-print(f"Frames analizados: {len(serie_angulos)}")
-print(f"Muestreo: 1 frame cada {FRAME_SKIP} frames ({SAMPLE_EVERY_N_SECONDS}s)")
