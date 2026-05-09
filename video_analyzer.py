@@ -6,24 +6,33 @@ class VideoAnalyzer:
         self.video_path = video_path
         self.sample_every_n_seconds = sample_every_n_seconds
 
-    def get_prompt(self):
+    def get_prompt(self, output_video="output.mp4"):
         cap = cv2.VideoCapture(self.video_path)
         detector = PoseDetector()
         serie_angulos = []
         frame_num = 0
 
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps        = cap.get(cv2.CAP_PROP_FPS)
+        width      = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height     = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_skip = max(1, int(fps * self.sample_every_n_seconds))
+
+        # VideoWriter para guardar el video procesado
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        out    = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
         while True:
             success, img = cap.read()
             if not success:
                 break
             frame_num += 1
+
+            img = detector.findPose(img)  # dibuja landmarks en TODOS los frames
+            out.write(img)                # guarda TODOS los frames con landmarks
+
             if frame_num % frame_skip != 0:
                 continue
 
-            img = detector.findPose(img)
             lmList, _ = detector.findPosition(img, draw=False)
 
             if lmList:
@@ -45,9 +54,10 @@ class VideoAnalyzer:
                 break
 
         cap.release()
+        out.release()  # ← cierra y guarda el archivo correctamente
         cv2.destroyAllWindows()
+        print(f"💾 Video guardado en: {output_video}")
 
-        # Construir y retornar el prompt directamente
         prompt = "Eres un entrenador experto en ping pong de alto rendimiento.\n"
         prompt += "Analizá estos ángulos frame por frame de un saque y dá un análisis técnico completo.\n"
         prompt += "Detectá errores, patrones y dá recomendaciones. Usá acento argentino suave.\n\n"
